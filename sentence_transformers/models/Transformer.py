@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from torch import nn
 from transformers import AutoConfig, AutoModel, AutoTokenizer, MT5Config, T5Config
-
+from peft import AutoPeftModelForFeatureExtraction, PeftConfig
 
 class Transformer(nn.Module):
     """Huggingface AutoModel to generate token embeddings.
@@ -38,6 +38,7 @@ class Transformer(nn.Module):
         cache_dir: Optional[str] = None,
         do_lower_case: bool = False,
         tokenizer_name_or_path: str = None,
+        peft = False # TODO: mia modifica
     ):
         super(Transformer, self).__init__()
         self.config_keys = ["max_seq_length", "do_lower_case"]
@@ -49,7 +50,11 @@ class Transformer(nn.Module):
         if config_args is None:
             config_args = {}
 
-        config = AutoConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir)
+        if peft: # TODO: mia modifica
+            config = PeftConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir) # TODO: mia modifica
+        else: # TODO: mia modifica
+            config = AutoConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir) # TODO: mia modifica
+
         self._load_model(model_name_or_path, config, cache_dir, **model_args)
 
         if max_seq_length is not None and "model_max_length" not in tokenizer_args:
@@ -80,6 +85,11 @@ class Transformer(nn.Module):
             self._load_t5_model(model_name_or_path, config, cache_dir, **model_args)
         elif isinstance(config, MT5Config):
             self._load_mt5_model(model_name_or_path, config, cache_dir, **model_args)
+        elif isinstance(config, PeftConfig): # TODO: mia modifica
+            print("*************************************Loading Peft Model*****************************************************") # TODO: mia modifica
+            self.auto_model = AutoPeftModelForFeatureExtraction.from_pretrained( # TODO: mia modifica
+                model_name_or_path, config=config, cache_dir=cache_dir, **model_args # TODO: mia modifica
+            ) # TODO: mia modifica
         else:
             self.auto_model = AutoModel.from_pretrained(
                 model_name_or_path, config=config, cache_dir=cache_dir, **model_args

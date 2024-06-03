@@ -159,6 +159,7 @@ class SentenceTransformer(nn.Sequential, FitMixin):
         tokenizer_kwargs: Optional[Dict[str, Any]] = None,
         config_kwargs: Optional[Dict[str, Any]] = None,
         model_card_data: Optional[SentenceTransformerModelCardData] = None,
+        peft = False # TODO: mia modifica
     ):
         # Note: self._load_sbert_model can also update `self.prompts` and `self.default_prompt_name`
         self.prompts = prompts or {}
@@ -169,6 +170,7 @@ class SentenceTransformer(nn.Sequential, FitMixin):
         self._model_card_vars = {}
         self._model_card_text = None
         self._model_config = {}
+        self.peft = peft # TODO: mia modifica
         if use_auth_token is not None:
             warnings.warn(
                 "The `use_auth_token` argument is deprecated and will be removed in v3 of SentenceTransformers.",
@@ -1472,7 +1474,7 @@ class SentenceTransformer(nn.Sequential, FitMixin):
                 if config_kwargs:
                     kwargs["config_args"].update(config_kwargs)
 
-                module = Transformer(model_name_or_path, cache_dir=cache_folder, **kwargs)
+                module = Transformer(model_name_or_path, cache_dir=cache_folder, **kwargs, peft=self.peft) # TODO: mia modifica
             else:
                 # Normalize does not require any files to be loaded
                 if module_class == Normalize:
